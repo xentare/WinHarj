@@ -23,6 +23,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Newtonsoft.Json;
+using System.Collections.ObjectModel;
+using System.Data;
 
 namespace iptracer
 {
@@ -35,6 +37,7 @@ namespace iptracer
         private Program Program;
         private bool showAdministratorDialog = true;
         private TcpRow selectedItem;
+        private TcpTable table;
 
         public MainWindow()
         {
@@ -55,7 +58,7 @@ namespace iptracer
 
         public void InitIpTable()
         {
-            TcpTable table = ManagedIpHelper.GetExtendedTcpTable(true);
+            table = ManagedIpHelper.GetExtendedTcpTable(true);
             IpDataGrid.ItemsSource = table.KnownRows;
             SetFileNamesToIpDataGrid(table);
 
@@ -75,9 +78,10 @@ namespace iptracer
                     tbExePath.Text = exe.MainModule.FileName;
                     tbStatus.Text = exe.MainModule.ModuleName;
                     lbDllPaths.ItemsSource = GetProcessDlls();
-                    txtbHttp.Text = HttpRequest(row.RemoteEndPoint.ToString());
+                    string json = HttpRequest(row.RemoteEndPoint.ToString());
                     ResolvedIp resolvedIp =
-                        JsonConvert.DeserializeObject<ResolvedIp>(HttpRequest(row.RemoteEndPoint.ToString()));
+                        JsonConvert.DeserializeObject<ResolvedIp>(json);
+                    txtbHttp.Text = resolvedIp.RegionName + "\n" + resolvedIp.CityName;
                     SetMap(resolvedIp.Latitude,resolvedIp.Longitude);
                 }
             }
@@ -183,6 +187,11 @@ namespace iptracer
             return null;
         }
 
+        public void FilterIps()
+        {
+
+        }
+
         private void btnRefresh_Click(object sender, RoutedEventArgs e)
         {
             InitIpTable();
@@ -191,6 +200,33 @@ namespace iptracer
         private void WebBrowser_OnLoadCompleted(object sender, NavigationEventArgs e)
         {
             HideScriptErrors((WebBrowser)sender, true);
+        }
+
+        private void CollectionViewSource_Filter(object sender, FilterEventArgs e)
+        {
+            Task t = e.Item as Task;
+            if (t != null)
+            // If filter is turned on, filter completed items.
+            {
+                if (this.checkBoxLocalConnections.IsChecked == true)
+                    e.Accepted = false;
+                else
+                    e.Accepted = true;
+            }
+        }
+
+        private void checkBox_Checked(object sender, RoutedEventArgs e)
+        {
+            var boolean = (CheckBox) sender;
+            if (boolean.IsChecked == true)
+            {
+                IpDataGrid.ItemsSource = table.KnownRows;
+            }
+            else
+            {
+                IpDataGrid.ItemsSource = table.RemoteRows;
+            }
+            IpDataGrid.ItemsSource = table.RemoteRows;
         }
     }
 }

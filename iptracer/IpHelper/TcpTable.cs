@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 
 namespace iptracer
 {
@@ -30,6 +32,7 @@ namespace iptracer
         public IEnumerable<TcpRow> Rows
         {
             get { return this.tcpRows; }
+            set { this.tcpRows = value; }
         }
 
         public IEnumerable<TcpRow> KnownRows
@@ -37,18 +40,32 @@ namespace iptracer
             get
             {
                 List<TcpRow> list = new List<TcpRow>();
-
-                foreach (TcpRow row in tcpRows)
-                {
-                    Process process = Process.GetProcessById(row.ProcessId);
-                    if (process.ProcessName == "System")
+                try {
+                    foreach (TcpRow row in tcpRows)
                     {
-                        list.Add(row);
+                        Process process = Process.GetProcessById(row.ProcessId);
+                        if (process.ProcessName == "System")
+                        {
+                            list.Add(row);
+                        }
                     }
+                } catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
                 }
                 return tcpRows.Except(list);
             }
         } 
+
+        public IEnumerable<TcpRow> RemoteRows
+        {
+            get
+            {
+                return from row in Rows
+                       where row.RemoteEndPoint.ToString().Substring(0, 3) != "127" && row.RemoteEndPoint.ToString().Substring(0, 1) != "0"
+                       select row;
+            }
+        }
 
         #endregion
 
