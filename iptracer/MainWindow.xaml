@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:iptracer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="1200">
+        Title="Ip Resolving Tool" Height="800" Width="1400">
     <Grid>
         <DataGrid x:Name="IpDataGrid" Height="auto" AutoGenerateColumns="True" Margin="10,36,632,36" DataContext="{Binding}" SelectionChanged="ipListBox_SelectionChanged"/>
-        <StackPanel Margin="565,0,0,553">
+        <StackPanel Margin="767,0,0,553">
             <TextBlock x:Name="tbExePath" Height="25" Margin="10,10,10,0"/>
             <ListView x:Name="lbDllPaths" Height="166" Margin="10,0"/>
         </StackPanel>
@@ -18,8 +18,9 @@
             </StatusBarItem>
         </StatusBar>
         <Button x:Name="btnRefresh" Content="Refresh" HorizontalAlignment="Left" Margin="10,9,0,0" VerticalAlignment="Top" Width="114" Click="btnRefresh_Click"/>
-        <TextBlock x:Name="txtbHttp" HorizontalAlignment="Left" Height="37" Margin="567,242,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="617"/>
-        <WebBrowser x:Name="webBrowser" LoadCompleted="WebBrowser_OnLoadCompleted" HorizontalAlignment="Left" Height="450" Margin="567,284,0,0" VerticalAlignment="Top" Width="617"/>
-        <CheckBox x:Name="checkBoxLocalConnections" Content="Show remote connections only" HorizontalAlignment="Left" Margin="129,12,0,0" VerticalAlignment="Top" Checked="checkBox_Checked"/>
+        <TextBlock x:Name="txtbHttp" HorizontalAlignment="Left" Height="37" Margin="767,242,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="617"/>
+        <WebBrowser x:Name="webBrowser" LoadCompleted="WebBrowser_OnLoadCompleted" HorizontalAlignment="Left" Height="450" Margin="767,279,0,0" VerticalAlignment="Top" Width="617"/>
+        <CheckBox x:Name="checkBoxLocalConnections" Content="Show local connections" HorizontalAlignment="Left" Margin="129,12,0,0" VerticalAlignment="Top" Checked="checkBox_Checked" Unchecked="checkBoxLocalConnections_Unchecked"/>
+        <CheckBox x:Name="checkBoxOwnConnections" Content="Show connections made by this application" HorizontalAlignment="Left" Margin="275,12,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.25,-0.562" Checked="checkBoxOwnConnections_Checked" Unchecked="checkBoxOwnConnections_Unchecked"/>
     </Grid>
 </Window>

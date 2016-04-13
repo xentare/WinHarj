@@ -59,9 +59,26 @@ namespace iptracer
         public void InitIpTable()
         {
             table = ManagedIpHelper.GetExtendedTcpTable(true);
-            IpDataGrid.ItemsSource = table.KnownRows;
+            if (checkBoxLocalConnections.IsChecked == true)
+            {
+                if (checkBoxOwnConnections.IsChecked == true)
+                {
+                    IpDataGrid.ItemsSource = table.KnownRows;
+                }
+                else
+                {
+                    IpDataGrid.ItemsSource = table.KnownRowsWithoutIpTracerRows;
+                }
+            }
+            else if (checkBoxOwnConnections.IsChecked == true)
+            {
+                IpDataGrid.ItemsSource = table.RemoteRows;
+            }
+            else
+            {
+                IpDataGrid.ItemsSource = table.RemoteRowsWithoutIpTracerRows;
+            }
             SetFileNamesToIpDataGrid(table);
-
         }
 
 
@@ -72,24 +89,28 @@ namespace iptracer
             {
                 if (IpDataGrid.SelectedItem != selectedItem)
                 {
-                    selectedItem = (TcpRow)IpDataGrid.SelectedItem;
+                    selectedItem = (TcpRow) IpDataGrid.SelectedItem;
                     var row = (TcpRow) IpDataGrid.CurrentItem;
                     Process exe = Process.GetProcessById(row.ProcessId);
                     tbExePath.Text = exe.MainModule.FileName;
                     tbStatus.Text = exe.MainModule.ModuleName;
                     lbDllPaths.ItemsSource = GetProcessDlls();
-                    string json = HttpRequest(row.RemoteEndPoint.ToString());
-                    ResolvedIp resolvedIp =
-                        JsonConvert.DeserializeObject<ResolvedIp>(json);
-                    txtbHttp.Text = resolvedIp.RegionName + "\n" + resolvedIp.CityName;
-                    SetMap(resolvedIp.Latitude,resolvedIp.Longitude);
+                    if (row.RemoteEndPoint.ToString().Substring(0, 3) != "127" &&
+                        row.RemoteEndPoint.ToString().Substring(0, 1) != "0")
+                    {
+                        string json = HttpRequest(row.RemoteEndPoint.ToString());
+                        ResolvedIp resolvedIp =
+                            JsonConvert.DeserializeObject<ResolvedIp>(json);
+                        txtbHttp.Text = resolvedIp.RegionName + "\n" + resolvedIp.CityName;
+                        SetMap(resolvedIp.Latitude, resolvedIp.Longitude);
+                    }
                 }
             }
-            catch(Win32Exception ex)
+            catch (Win32Exception ex)
             {
                 tbStatus.Text = ex.Message;
             }
-            catch (Exception ex)
+            catch (AccessViolationException ex)
             {
                 tbStatus.Text = ex.Message;
                 if (showAdministratorDialog)
@@ -102,6 +123,10 @@ namespace iptracer
                         showAdministratorDialog = false;
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                //tbStatus.Text = ex.Message;
             }
 
         }
@@ -202,23 +227,33 @@ namespace iptracer
             HideScriptErrors((WebBrowser)sender, true);
         }
 
-        private void CollectionViewSource_Filter(object sender, FilterEventArgs e)
+        private void checkBox_Checked(object sender, RoutedEventArgs e)
         {
-            Task t = e.Item as Task;
-            if (t != null)
-            // If filter is turned on, filter completed items.
+            if (checkBoxOwnConnections.IsChecked == true)
             {
-                if (this.checkBoxLocalConnections.IsChecked == true)
-                    e.Accepted = false;
-                else
-                    e.Accepted = true;
+                IpDataGrid.ItemsSource = table.KnownRows;
+            }
+            else
+            {
+                IpDataGrid.ItemsSource = table.KnownRowsWithoutIpTracerRows;
             }
         }
 
-        private void checkBox_Checked(object sender, RoutedEventArgs e)
+        private void checkBoxLocalConnections_Unchecked(object sender, RoutedEventArgs e)
         {
-            var boolean = (CheckBox) sender;
-            if (boolean.IsChecked == true)
+            if (checkBoxOwnConnections.IsChecked == true)
+            {
+                IpDataGrid.ItemsSource = table.RemoteRows;
+            }
+            else
+            {
+                IpDataGrid.ItemsSource = table.RemoteRowsWithoutIpTracerRows;
+            }
+        }
+
+        private void checkBoxOwnConnections_Checked(object sender, RoutedEventArgs e)
+        {
+            if (checkBoxLocalConnections.IsChecked == true)
             {
                 IpDataGrid.ItemsSource = table.KnownRows;
             }
@@ -226,7 +261,19 @@ namespace iptracer
             {
                 IpDataGrid.ItemsSource = table.RemoteRows;
             }
-            IpDataGrid.ItemsSource = table.RemoteRows;
+        }
+
+        private void checkBoxOwnConnections_Unchecked(object sender, RoutedEventArgs e)
+        {
+
+            if (checkBoxLocalConnections.IsChecked == true)
+            {
+                IpDataGrid.ItemsSource = table.KnownRowsWithoutIpTracerRows;
+            }
+            else
+            {
+                IpDataGrid.ItemsSource = table.RemoteRowsWithoutIpTracerRows;
+            }
         }
     }
 }

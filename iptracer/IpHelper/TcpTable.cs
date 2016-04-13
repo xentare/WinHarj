@@ -67,6 +67,56 @@ namespace iptracer
             }
         }
 
+        public IEnumerable<TcpRow> KnownRowsWithoutIpTracerRows
+        {
+            get
+            {
+                List<TcpRow> list = new List<TcpRow>();
+                try
+                {
+                    foreach (TcpRow row in tcpRows)
+                    {
+                        Process process = Process.GetProcessById(row.ProcessId);
+                        Process current = Process.GetCurrentProcess();
+                        if (process.Id == current.Id)
+                        {
+                            list.Add(row);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                return KnownRows.Except(list);
+            }
+        }
+
+        public IEnumerable<TcpRow> RemoteRowsWithoutIpTracerRows
+        {
+            get
+            {
+                List<TcpRow> list = new List<TcpRow>();
+                try
+                {
+                    foreach (TcpRow row in tcpRows)
+                    {
+                        Process process = Process.GetProcessById(row.ProcessId);
+                        Process current = Process.GetCurrentProcess();
+                        if (process.Id == current.Id)
+                        {
+                            list.Add(row);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                return RemoteRows.Except(list);
+            }
+        }
+
         #endregion
 
         #region IEnumerable<TcpRow> Members
